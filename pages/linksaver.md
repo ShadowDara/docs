@@ -1,6 +1,6 @@
 # Linksaver
 
-[Back Home](#)
+[Back Home](#) - [Download Page](#/download)
 
 Linksaver is a CLI Tool to save links for credits and licenses for your project. 
 
@@ -9,7 +9,7 @@ The Tool saves your links and configuration in a JSON file called `linksaver.jso
 
 ## Setup
 
-Linksaver has no reel setup or installation, just grab the Python file and copy it into your project and run it! Select `init` to create a new config file for that project.
+Linksaver has no reel setup or installation, just grab the Python file and copy it into your project and run it! Select `init` to create a new config file for that project. You can find the python script [here](https://github.com/shadowdara/l2) and you need to have python installed. Then just start the either via the command line or via a double click, it doesn't matter.
 
 
 ## add

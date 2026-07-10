@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "a DOCS Site for all my small projects",
   "scripts": {
-    "build": "npx samengine-cli minisite"
+    "build": "bun seg2.js minisite",
+    "buildnode": "node seg2.js minisite"
   },
   "repository": {
     "type": "git",
@@ -14,9 +15,5 @@
   "bugs": {
     "url": "https://github.com/shadowdara/docs/issues"
   },
-  "homepage": "https://github.com/shadowdara/docs#readme",
-  "dependencies": {
-    "samengine-cli": "^2.0.6",
-    "seg": "^0.0.1-beta.1"
-  }
+  "homepage": "https://github.com/shadowdara/docs#readme"
 }

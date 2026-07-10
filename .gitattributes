@@ -2,4 +2,5 @@
 samfile linguist-language=Shell
 
 docs/ linguist-generated
+seg2.js linguist-generated
 
