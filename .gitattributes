@@ -1,0 +1,5 @@
+# handle samfile as SHell
+samfile linguist-language=Shell
+
+docs/ linguist-generated
+
