@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/shadowdara/docs#readme",
   "dependencies": {
-    "samengine-cli": "^2.0.6"
+    "samengine-cli": "^2.0.6",
+    "seg": "^0.0.1-beta.1"
   }
 }

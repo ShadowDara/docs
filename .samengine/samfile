@@ -1,0 +1,9 @@
+# Build script for the docs
+build:
+    RUN npx samengine-cli minisite
+    MKDIR docs
+    MV index.html docs/index.html
+
+b:
+    TASK build
+

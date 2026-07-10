@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MiniSite</title>
+
+    <style>
+:root{--md-font:system-ui,sans-serif;--md-mono:"Fira Code","Cascadia Code",Consolas,monospace;--md-max-width:800px;--md-line-height:1.7;--md-color:#1a1a2e;--md-bg:#fff;--md-code-bg:#f4f4f8;--md-border:#d1d5db;--md-accent:#3b5bdb;--md-blockquote:#6b7280}*,::before,::after{box-sizing:border-box}body{margin:0;background:var(--md-bg);color:var(--md-color)}.md-body{font-family:var(--md-font);line-height:var(--md-line-height);max-width:var(--md-max-width);margin:2rem auto;padding:0 1.5rem}h1,h2,h3,h4,h5,h6{margin:1.6em 0 .4em;line-height:1.25;font-weight:700}h1{font-size:2rem;border-bottom:2px solid var(--md-border);padding-bottom:.3em}h2{font-size:1.5rem;border-bottom:1px solid var(--md-border);padding-bottom:.2em}p{margin:.8em 0}a{color:var(--md-accent)}code{font-family:var(--md-mono);font-size:.875em;background:var(--md-code-bg);padding:.15em .35em;border-radius:4px}pre{background:var(--md-code-bg);border-radius:6px;padding:1em;overflow-x:auto}pre code{background:none;padding:0;font-size:.9em}blockquote{margin:1em 0;padding:.5em 1em;border-left:4px solid var(--md-accent);color:var(--md-blockquote)}table{border-collapse:collapse;width:100%;margin:1em 0}th,td{border:1px solid var(--md-border);padding:.5em .8em}th{background:var(--md-code-bg);font-weight:600}tr:nth-child(even) td{background:#fafafa}ul,ol{padding-left:1.5em;margin:.8em 0}li{margin:.25em 0}hr{border:none;border-top:2px solid var(--md-border);margin:2em 0}img{max-width:100%;height:auto;border-radius:4px}mark{background:#fef08a;padding:.1em .2em;border-radius:2px}input[type="checkbox"]{margin-right:.4em}.footnotes{font-size:.875em;color:var(--md-blockquote)}
+    </style>
+</head>
+
+<body>
+
+    <main id="app" class="md-body"></main>
+
+    <script>const pages = {"index":"<h1 id=\"shadowdaras-docs\">Shadowdara's Docs</h1>\n<p>This is my DOCS Page for all of my small projects and its a test for minisite too!</p>\n<h2 id=\"content\">Content</h2>\n<ul>\n<li><a href=\"#/linksaver\">Linksaver</a></li>\n</ul>","linksaver":"<h1 id=\"linksaver\">Linksaver</h1>\n<p>Linksaver is a CLI Tool to save links for credits and licenses for your project.</p>\n<p>The Tool saves your links and configuration in a JSON file called <code>linksaver.json</code>. The Content of this file be viewed via the CLI Tool in the command line or exported to a formatted markdown or txt file.</p>\n<h2 id=\"setup\">Setup</h2>\n<p>Linksaver has no reel setup or installation, just grab the Python file and copy it into your project and run it! Select <code>init</code> to create a new config file for that project.</p>"};
+const app = document.getElementById("app");
+
+function normalizeRoute(route) {
+    route = route.trim();
+
+    // entfernt f�hrende /
+    route = route.replace(/^\/+/, "");
+
+    // fallback auf index
+    if (
+        route === "" ||
+        route === "/" ||
+        route === "index"
+    ) {
+        return "index";
+    }
+
+    return route;
+}
+
+function render() {
+    let route = location.hash.slice(1);
+
+    route = normalizeRoute(route);
+
+    const html =
+        pages[route] ??
+        pages["404"] ??
+        `<h1>404</h1><p>This Page was not found!</p><p><a href="#">Back Home</a></p><p><a href="javascript:location.hash = '#/' + lastValid">Back to the last Page</a></p>`;
+
+    app.innerHTML = html;
+}
+
+window.addEventListener("hashchange", render);
+window.addEventListener("DOMContentLoaded", render);</script>
+
+</body>
+</html>
