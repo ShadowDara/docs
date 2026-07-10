@@ -4,6 +4,7 @@ build:
     MKDIR docs
     MV index.html docs/index.html
 
+# a little shortcut
 b:
     TASK build
 
