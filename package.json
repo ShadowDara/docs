@@ -1,17 +1,16 @@
 {
   "name": "docs",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "a DOCS Site for all my small projects",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx samengine-cli minisite"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shadowdara/docs.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Shadowdara",
+  "license": "repository",
   "bugs": {
     "url": "https://github.com/shadowdara/docs/issues"
   },
