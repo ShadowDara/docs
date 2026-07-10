@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MiniSite</title>
+    <title>Shadowdara's Docs</title>
 
     <style>
 /*__CSS__{}*/
@@ -15,6 +15,185 @@
     <main id="app" class="md-body"></main>
 
     <script>const pages = __PAGES__;
+
+// Search INdex
+const searchIndex = [];
+
+buildSearchIndex();
+
+function buildSearchIndex() {
+
+    for (const [route, html] of Object.entries(pages)) {
+
+        if (route === "404") continue;
+
+        // HTML entfernen
+        const text = html
+            .replace(/<script[\s\S]*?<\/script>/gi, "")
+            .replace(/<style[\s\S]*?<\/style>/gi, "")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/&nbsp;/g, " ")
+            .replace(/\s+/g, " ")
+            .toLowerCase();
+
+        // Wörter extrahieren
+        const words = [...new Set(
+            text.match(/\p{L}[\p{L}\p{N}-]*/gu) || []
+        )];
+
+        searchIndex.push({
+            route,
+            text,
+            words
+        });
+    }
+}
+
+function tokenize(text) {
+
+    return text
+        .toLowerCase()
+        .match(/\p{L}[\p{L}\p{N}-]*/gu) || [];
+}
+
+function similarity(a, b) {
+
+    if (!a || !b) return 0;
+
+    const words = b.split(/\s+/);
+
+    let best = 0;
+
+    for (const word of words) {
+
+        const score = stringSimilarity(a, word);
+
+        if (score > best)
+            best = score;
+    }
+
+    return best;
+}
+
+function stringSimilarity(a, b) {
+
+    const distance = levenshtein(a, b);
+
+    return 1 - distance / Math.max(a.length, b.length);
+}
+
+function levenshtein(a, b) {
+
+    const matrix = [];
+
+    for (let i=0;i<=b.length;i++)
+        matrix[i]=[i];
+
+    for (let j=0;j<=a.length;j++)
+        matrix[0][j]=j;
+
+    for (let i=1;i<=b.length;i++) {
+
+        for (let j=1;j<=a.length;j++) {
+
+            if (b[i-1]==a[j-1])
+                matrix[i][j]=matrix[i-1][j-1];
+            else
+                matrix[i][j]=Math.min(
+                    matrix[i-1][j-1]+1,
+                    matrix[i][j-1]+1,
+                    matrix[i-1][j]+1
+                );
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+function search(query) {
+
+    const queryWords = tokenize(query);
+
+    const results = [];
+
+    for (const page of searchIndex) {
+
+        let score = 0;
+
+        for (const queryWord of queryWords) {
+
+            let best = 0;
+
+            for (const word of page.words) {
+
+                const s = stringSimilarity(queryWord, word);
+
+                if (s > best)
+                    best = s;
+            }
+
+            score += best;
+        }
+
+        score /= queryWords.length;
+
+        if (score > 0.45) {
+            results.push({
+                route: page.route,
+                score
+            });
+        }
+    }
+
+    results.sort((a, b) => b.score - a.score);
+
+    const resultDiv = document.getElementById("results");
+
+if (!resultDiv) return;
+
+if (results.length === 0) {
+    resultDiv.innerHTML = "<p>no hits found.</p>";
+    return;
+}
+
+resultDiv.innerHTML = results.map(r => `
+    <div class="search-result">
+        <a href="#/${r.route}">
+            <strong>${r.route}</strong>
+        </a>
+        <div>${Math.round(r.score * 100)}%</div>
+    </div>
+`).join("");
+}
+
+function renderSearch() {
+    app.innerHTML = `
+        <h1>Search</h1>
+        
+        <a href="#">Home</a>
+        
+        <br>
+        <br>
+
+        <input
+            id="searchBox"
+            type="search"
+            placeholder="Search..."
+            style="width:100%;padding:10px;font-size:18px">
+
+        <div id="results"></div>
+    `;
+
+    const input = document.getElementById("searchBox");
+
+    input.addEventListener("input", () => {
+        search(input.value);
+    });
+
+    input.focus();
+}
+
+// Change DOM
 const app = document.getElementById("app");
 
 function normalizeRoute(route) {
@@ -39,6 +218,11 @@ function render() {
     let route = location.hash.slice(1);
 
     route = normalizeRoute(route);
+    
+    if (route === "search") {
+        renderSearch();
+        return;
+    }
 
     const html =
         pages[route] ??

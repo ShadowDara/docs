@@ -1,6 +1,6 @@
 # Linksaver
 
-[Back Home](#) - [Download Page](#/download)
+[Back Home](#) - [Download Page](#/download) - [Search](#/search)
 
 Linksaver is a CLI Tool to save links for credits and licenses for your project. 
 
