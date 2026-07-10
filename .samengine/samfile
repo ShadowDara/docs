@@ -1,6 +1,6 @@
 # Build script for the docs
 build:
-    RUN npx samengine-cli minisite
+    RUN bun run build
     MKDIR docs
     MV index.html docs/index.html
 
