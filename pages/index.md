@@ -10,12 +10,14 @@ This is my DOCS Page for all of my small projects and its a test for minisite to
 - [Minisite](#/minisite)
 - [Path-Viewer](#/path-viewer)
 - [samfile](#/samfile)
+- [templates](#/templates)
 
 
 ## More (stuff which is not a project)
 
 - [Download](#/download)
 - [Search](#/search)
+- [TODO](#/todo)
 
 
 ## Info
@@ -27,5 +29,4 @@ This is my DOCS Page for all of my small projects and its a test for minisite to
 
 - *This site started on 10.07.2026*
 
-*EDIT DATE: 11.07.2026*
-
+*EDIT DATE: 12.07.2026*
