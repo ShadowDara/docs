@@ -1,7 +1,6 @@
 # Build script for the docs
 build:
     RUN bun run build
-    MKDIR docs
     MV index.html docs/index.html
 
 # a little shortcut
