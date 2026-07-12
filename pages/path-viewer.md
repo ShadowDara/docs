@@ -4,5 +4,7 @@
 
 This is programm to see the envirment variables on windows. The GUI is made with ImGUI.
 
-*EDIT DATE: 11.08.2026*
+THe programm does only work on Windows. The code can be found [here](https://github.com/shadowdara/path-viewer).
+
+*EDIT DATE: 13.08.2026*
 
