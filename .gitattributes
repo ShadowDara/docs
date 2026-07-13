@@ -4,3 +4,4 @@ samfile linguist-language=Shell
 docs/ linguist-generated
 seg2.js linguist-generated
 
+docs/index.html  merge=binary
