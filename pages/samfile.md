@@ -19,9 +19,33 @@ build:
 ```
 
 
+## Task Naming
+
+i would recommend the users to make task which does not start with `_` in general and no especially not with `_b`. The good thing you will see, every Task name. But i just want to recommend it.
+
+
 ## Commands
 
 The samfile has a lot of commands which are available. Click [here](#/samfile/commands) to view a full list for every command.
+
+
+## Install
+
+Simply install the samfilerunner with and then run it via `seg`!
+
+
+### cargo
+
+```
+cargo install samtool
+```
+
+
+### npm
+
+```
+npm i @shadowdara/seg
+```
 
 
 ## Runners
