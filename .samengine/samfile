@@ -2,8 +2,10 @@
 build:
     RUN bun run build
     MV index.html docs/index.html
+    RUN git add *.md *.html
+    RUN git commit -m "SAfe"
+    RUN git push
 
 # a little shortcut
 b:
     TASK build
-
