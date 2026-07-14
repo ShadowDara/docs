@@ -55,12 +55,12 @@ This is an overview about the samfile runners and which commands they are suppor
 *View the statistic [here](#/samfile/runners)*
 
 
-### Buildin samfile
+## Buildin samfile
 
 The buildin samfile can be found [here](./staticpages/buildinsamfiles.html)
 
 
-### Ideas / TODO
+## Ideas / TODO
 
 - move samfile to the root dir instead of `.samengine` but both will work, but the .samengine directory will probably generated an info message that this is not neccessary anymore, but the support for it will not be removed!
 - Add new field for a timer which be started and then stopped and printed to the command line
