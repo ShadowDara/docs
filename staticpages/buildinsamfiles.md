@@ -1,6 +1,6 @@
 # Buildinsamfiles
 
-[Back](../index.html/#/samfile)
+[Back](../index.html#/samfile)
 
 This is code for the samfile in samfileparser and in seg.
 
