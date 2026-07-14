@@ -25,6 +25,7 @@ This is my DOCS Page for all of my small projects and its a test for minisite to
 - [Download](#/download)
 - [Search](#/search)
 - [TODO](#/todo)
+- [Online Pages](#/online)
 
 
 ## Info
@@ -36,4 +37,4 @@ This is my DOCS Page for all of my small projects and its a test for minisite to
 
 - *This site started on 10.07.2026*
 
-*EDIT DATE: 13.07.2026*
+*EDIT DATE: 14.07.2026*
