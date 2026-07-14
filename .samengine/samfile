@@ -1,11 +1,22 @@
 # Build script for the docs
 build:
-    RUN bun run build
+    RUN bun seg2.js minisite
     MV index.html docs/index.html
+    RUN bun seg2.js markdown staticpages/buildinsamfiles.md
+    MKDIR docs/staticpages
+    MV staticpages/buildinsamfiles.md.html docs/staticpages/buildinsamfiles.html
+
+# a little shortcut
+b:
+    TASK build
+
+# Build script for the docs
+release:
+    TASK build
     RUN git add *.md *.html
     RUN git commit -m "SAfe"
     RUN git push
 
 # a little shortcut
-b:
-    TASK build
+r:
+    TASK release
