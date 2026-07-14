@@ -57,7 +57,7 @@ This is an overview about the samfile runners and which commands they are suppor
 
 ### Buildin samfile
 
-The buildin samfile can be found [here](/docs/staticpages/buildinsamfiles.html)
+The buildin samfile can be found [here](./staticpages/buildinsamfiles.html)
 
 
 ### Ideas / TODO
