@@ -13319,7 +13319,7 @@ Arguments / Tools:
 import fs2 from "fs";
 import path2 from "path";
 
-// node_modules/samengine-cli/dist/markdown.js
+// src/tools/mdparser.ts
 function escapeHtml(text) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
@@ -13764,6 +13764,7 @@ var defaultCss = `
   --md-color: #1a1a2e;
   --md-bg: #ffffff;
   --md-code-bg: #f4f4f8;
+  --md-table-2: #fafafa;
   --md-border: #d1d5db;
   --md-accent: #3b5bdb;
   --md-blockquote: #6b7280;
@@ -13801,10 +13802,11 @@ blockquote {
   border-left: 4px solid var(--md-accent);
   color: var(--md-blockquote);
 }
+input { color: var(--md-color); background: var(--md-bg); }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
 th, td { border: 1px solid var(--md-border); padding: 0.5em 0.8em; }
 th { background: var(--md-code-bg); font-weight: 600; }
-tr:nth-child(even) td { background: #fafafa; }
+tr:nth-child(even) td { background: var(--md-table-2); }
 ul, ol { padding-left: 1.5em; margin: 0.8em 0; }
 li { margin: 0.25em 0; }
 hr { border: none; border-top: 2px solid var(--md-border); margin: 2em 0; }
@@ -13812,6 +13814,21 @@ img { max-width: 100%; height: auto; border-radius: 4px; }
 mark { background: #fef08a; padding: 0.1em 0.2em; border-radius: 2px; }
 input[type="checkbox"] { margin-right: 0.4em; }
 .footnotes { font-size: 0.875em; color: var(--md-blockquote); }
+@media (prefers-color-scheme: dark) {
+    :root {
+        --md-font: system-ui, sans-serif;
+        --md-mono: "Fira Code", "Cascadia Code", Consolas, monospace;
+        --md-max-width: 800px;
+        --md-line-height: 1.7;
+        --md-color: #ffffff;
+        --md-bg: #000000;
+        --md-code-bg: #292929;
+        --md-table-2: #1b1b1b;
+        --md-border: #d1d5db;
+        --md-accent: #45bbff;
+        --md-blockquote: #6b7280;
+    }
+}
 `;
 function parse(markdown, options = {}) {
   const opts = {
@@ -13857,6 +13874,13 @@ ${body}
 </body>
 </html>`;
 }
+function exportcss() {
+  return defaultCss;
+}
+
+// src/tools/minisite.ts
+import fs from "fs";
+import path from "path";
 // node_modules/samengine-cli/dist/jsonc-parser.js
 function parseJSONC(input) {
   let i = 0;
@@ -14020,550 +14044,6 @@ function parseJSONC(input) {
     error("Unexpected trailing input");
   return result;
 }
-// src/tools/minisite.ts
-import fs from "fs";
-import path from "path";
-
-// src/tools/mdparser.ts
-function escapeHtml2(text) {
-  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-}
-function smartypants2(text) {
-  return text.replace(/---/g, "\u2014").replace(/--/g, "\u2013").replace(/\.{3}/g, "\u2026").replace(/"([^"]+)"/g, "\u201C$1\u201D").replace(/'([^']+)'/g, "\u2018$1\u2019");
-}
-function isExternalUrl2(url) {
-  return /^https?:\/\//i.test(url);
-}
-function renderInline2(text, opts) {
-  const ESCAPES = {
-    "\\\\": "@@ESC-BACKSLASH@@",
-    "\\[": "@@ESC-LBRACKET@@",
-    "\\]": "@@ESC-RBRACKET@@",
-    "\\(": "@@ESC-LPAREN@@",
-    "\\)": "@@ESC-RPAREN@@",
-    "\\|": "@@ESC-PIPE@@",
-    "\\\"": "@@ESC-QUOTE@@",
-    "\\*": "@@ESC-STAR@@",
-    "\\_": "@@ESC-UNDERSCORE@@",
-    "\\`": "@@ESC-BACKTICK@@",
-    "\\~": "@@ESC-TILDE@@"
-  };
-  for (const [char, placeholder] of Object.entries(ESCAPES)) {
-    const regex = new RegExp(char.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"), "g");
-    text = text.replace(regex, placeholder);
-  }
-  const htmlPlaceholders = [];
-  if (!opts.sanitize) {
-    text = text.replace(/<[^>]+>/g, (match) => {
-      const idx = htmlPlaceholders.push(match) - 1;
-      return `@@HTML${idx}@@`;
-    });
-  }
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+?)(?:\s+"([^"]*)")?\)/g, (_, alt, url, title) => {
-    const t = title ? ` title="${escapeHtml2(title)}"` : "";
-    const idx = htmlPlaceholders.push(`<img src="${url}" alt="${escapeHtml2(alt)}"${t}>`) - 1;
-    return `@@HTML${idx}@@`;
-  });
-  text = text.replace(/\[([^\]]+)\]\(([^)]+?)(?:\s+"([^"]*)")?\)/g, (_, linkText, url, title) => {
-    const t = title ? ` title="${escapeHtml2(title)}"` : "";
-    const ext = opts.externalLinks && isExternalUrl2(url) ? ' target="_blank" rel="noopener noreferrer"' : "";
-    const idx = htmlPlaceholders.push(`<a href="${url}"${t}${ext}>${linkText}</a>`) - 1;
-    return `@@HTML${idx}@@`;
-  });
-  text = text.replace(/`{2}([^`]+)`{2}|`([^`\n]+)`/g, (_, a, b) => {
-    return `<code>${escapeHtml2(a ?? b)}</code>`;
-  });
-  text = text.replace(/<(https?:\/\/[^\s>]+)>/g, (_, url) => {
-    const ext = opts.externalLinks ? ' target="_blank" rel="noopener noreferrer"' : "";
-    return `<a href="${url}"${ext}>${url}</a>`;
-  });
-  text = text.replace(/<([^@\s>]+@[^@\s>]+\.[^@\s>]+)>/g, (_, email) => {
-    return `<a href="mailto:${email}">${email}</a>`;
-  });
-  text = text.replace(/(\*{3}|_{3})(.+?)\1/g, "<strong><em>$2</em></strong>");
-  text = text.replace(/(\*{2}|_{2})(.+?)\1/g, "<strong>$2</strong>");
-  text = text.replace(/(\*|_)(.+?)\1/g, "<em>$2</em>");
-  text = text.replace(/~~(.+?)~~/g, "<del>$1</del>");
-  text = text.replace(/\^([^^]+)\^/g, "<sup>$1</sup>");
-  text = text.replace(/(?<!~)~(?!~)([^~]+)~(?!~)/g, "<sub>$1</sub>");
-  text = text.replace(/==(.+?)==/g, "<mark>$1</mark>");
-  text = text.replace(/ {2,}\n/g, `<br>
-`);
-  if (opts.breaks) {
-    text = text.replace(/\n/g, `<br>
-`);
-  }
-  if (opts.smartypants) {
-    text = smartypants2(text);
-  }
-  if (!opts.sanitize) {
-    text = text.replace(/@@HTML(\d+)@@/g, (_, i) => htmlPlaceholders[+i]);
-  }
-  text = text.replace(/@@ESC-BACKSLASH@@/g, "\\");
-  text = text.replace(/@@ESC-LPAREN@@/g, "(");
-  text = text.replace(/@@ESC-RPAREN@@/g, ")");
-  text = text.replace(/@@ESC-PIPE@@/g, "|");
-  text = text.replace(/@@ESC-QUOTE@@/g, '"');
-  text = text.replace(/@@ESC-STAR@@/g, "*");
-  text = text.replace(/@@ESC-UNDERSCORE@@/g, "_");
-  text = text.replace(/@@ESC-BACKTICK@@/g, "`");
-  text = text.replace(/@@ESC-TILDE@@/g, "~");
-  text = text.replace(/@@ESC-RBRACKET@@/g, "]");
-  text = text.replace(/@@ESC-LBRACKET@@/g, "[");
-  return text;
-}
-function parseListItems2(lines, baseIndent) {
-  const items = [];
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    const indentMatch = line.match(/^(\s*)/);
-    const indent = indentMatch ? indentMatch[1].length : 0;
-    if (indent < baseIndent)
-      break;
-    if (indent > baseIndent) {
-      i++;
-      continue;
-    }
-    const bulletMatch = line.match(/^\s*(?:[-*+]|\d+\.)\s+(.*)/);
-    if (!bulletMatch) {
-      i++;
-      continue;
-    }
-    let itemText = bulletMatch[1];
-    let task = false;
-    let checked = false;
-    const taskMatch = itemText.match(/^\[([ xX])\]\s+(.*)/);
-    if (taskMatch) {
-      task = true;
-      checked = taskMatch[1].toLowerCase() === "x";
-      itemText = taskMatch[2];
-    }
-    const childLines = [];
-    i++;
-    while (i < lines.length) {
-      const nextIndent = (lines[i].match(/^(\s*)/) ?? ["", ""])[1].length;
-      if (nextIndent <= baseIndent && lines[i].match(/^\s*(?:[-*+]|\d+\.)\s/))
-        break;
-      childLines.push(lines[i]);
-      i++;
-    }
-    const children = childLines.length > 0 ? parseListItems2(childLines, baseIndent + 2) : [];
-    items.push({ text: itemText, task, checked, children });
-  }
-  return items;
-}
-function renderListItems2(items, ordered, opts) {
-  return items.map((item) => {
-    const checkbox = item.task ? `<input type="checkbox"${item.checked ? " checked" : ""} disabled> ` : "";
-    const childList = item.children.length > 0 ? renderList2(item.children, ordered, opts) : "";
-    return `<li>${checkbox}${renderInline2(item.text, opts)}${childList}</li>`;
-  }).join(`
-`);
-}
-function renderList2(items, ordered, opts) {
-  const tag = ordered ? "ol" : "ul";
-  return `<${tag}>
-${renderListItems2(items, ordered, opts)}
-</${tag}>`;
-}
-function parseTable2(block, opts) {
-  const rows = block.trim().split(`
-`);
-  if (rows.length < 2)
-    return `<p>${renderInline2(block, opts)}</p>`;
-  const headerCells = rows[0].split(/(?<!\\)\|/).filter((_, i, a) => !(i === 0 && _ === "") && !(i === a.length - 1 && _ === "")).map((c) => c.trim());
-  const alignRow = rows[1].split(/(?<!\\)\|/).filter((c) => /[-:]/.test(c));
-  const aligns = alignRow.map((c) => {
-    c = c.trim();
-    if (c.startsWith(":") && c.endsWith(":"))
-      return "center";
-    if (c.endsWith(":"))
-      return "right";
-    if (c.startsWith(":"))
-      return "left";
-    return "";
-  });
-  const thead = `<thead>
-<tr>
-${headerCells.map((c, i) => {
-    const align = aligns[i] ? ` style="text-align:${aligns[i]}"` : "";
-    return `<th${align}>${renderInline2(c, opts)}</th>`;
-  }).join(`
-`)}
-</tr>
-</thead>`;
-  const bodyRows = rows.slice(2).map((row) => {
-    const cells = row.split(/(?<!\\)\|/).filter((_, i, a) => !(i === 0 && _ === "") && !(i === a.length - 1 && _ === "")).map((c) => c.trim());
-    return `<tr>
-${cells.map((c, i) => {
-      const align = aligns[i] ? ` style="text-align:${aligns[i]}"` : "";
-      return `<td${align}>${renderInline2(c, opts)}</td>`;
-    }).join(`
-`)}
-</tr>`;
-  });
-  const tbody = `<tbody>
-${bodyRows.join(`
-`)}
-</tbody>`;
-  return `<table>
-${thead}
-${tbody}
-</table>`;
-}
-function parseBlockquote2(content, opts) {
-  const inner = content.split(`
-`).map((l) => l.replace(/^>\s?/, "")).join(`
-`);
-  return `<blockquote>
-${parseBlocks2(inner, opts)}
-</blockquote>`;
-}
-function renderCodeBlock2(lang, code) {
-  const langAttr = lang ? ` class="language-${escapeHtml2(lang)}"` : "";
-  return `<pre><code${langAttr}>${escapeHtml2(code)}</code></pre>`;
-}
-function collectFootnotes2(text) {
-  const notes = {};
-  const cleaned = text.replace(/^\[(\^[^\]]+)\]:\s+(.+)$/gm, (_, key, val) => {
-    notes[key] = val;
-    return "";
-  });
-  return { text: cleaned, notes };
-}
-function renderFootnoteRefs2(text, notes, opts) {
-  return text.replace(/\[(\^[^\]]+)\]/g, (_, key) => {
-    if (!notes[key])
-      return _;
-    const id = key.slice(1);
-    return `<sup><a href="#fn-${id}" id="fnref-${id}">${id}</a></sup>`;
-  });
-}
-function renderFootnoteList2(notes, opts) {
-  const entries = Object.entries(notes);
-  if (entries.length === 0)
-    return "";
-  const items = entries.map(([key, val]) => {
-    const id = key.slice(1);
-    return `<li id="fn-${id}">${renderInline2(val, opts)} <a href="#fnref-${id}">\u21A9</a></li>`;
-  }).join(`
-`);
-  return `<hr>
-<ol class="footnotes">
-${items}
-</ol>`;
-}
-function parseBlocks2(markdown, opts) {
-  const output = [];
-  let remaining = markdown;
-  while (remaining.length > 0) {
-    let matched = false;
-    if (/^\n+/.test(remaining)) {
-      remaining = remaining.replace(/^\n+/, "");
-      continue;
-    }
-    {
-      const m = remaining.match(/^@@CODEBLOCK\d+@@/);
-      if (m) {
-        output.push(m[0]);
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const m = remaining.match(/^(`{3,}|~{3,})([^\n]*)\n([\s\S]*?)\n?\1[ \t]*(?:\n|$)/);
-      if (m) {
-        const lang = m[2].trim();
-        const code = m[3];
-        output.push(renderCodeBlock2(lang, code));
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const lines = [];
-      let rest = remaining;
-      let anyCode = false;
-      while (true) {
-        const m = rest.match(/^(?: {4}|\t)(.*)(?:\n|$)/);
-        if (!m)
-          break;
-        lines.push(m[1]);
-        rest = rest.slice(m[0].length);
-        anyCode = true;
-      }
-      if (anyCode) {
-        output.push(renderCodeBlock2("", lines.join(`
-`)));
-        remaining = rest;
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const lines = [];
-      let rest = remaining;
-      while (true) {
-        const m = rest.match(/^>(.*)(?:\n|$)/);
-        if (!m)
-          break;
-        lines.push(">" + m[1]);
-        rest = rest.slice(m[0].length);
-      }
-      if (lines.length > 0) {
-        output.push(parseBlockquote2(lines.join(`
-`), opts));
-        remaining = rest;
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const m = remaining.match(/^(#{1,6})\s+(.+?)(?:\s+#+)?\s*(?:\n|$)/);
-      if (m) {
-        const level = m[1].length;
-        const text = m[2].trim();
-        const id = text.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
-        output.push(`<h${level} id="${id}">${renderInline2(text, opts)}</h${level}>`);
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const m = remaining.match(/^(.+)\n(=+|-+)\s*(?:\n|$)/);
-      if (m) {
-        const level = m[2][0] === "=" ? 1 : 2;
-        const text = m[1].trim();
-        const id = text.toLowerCase().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
-        output.push(`<h${level} id="${id}">${renderInline2(text, opts)}</h${level}>`);
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const m = remaining.match(/^(?:[-*_] *){3,}\s*(?:\n|$)/);
-      if (m) {
-        output.push("<hr>");
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const m = remaining.match(/^(\|?.+\|.+\n\|?[-| :]+\|[-| :]+\n(?:\|?.+\|.+\n?)*)/);
-      if (m) {
-        output.push(parseTable2(m[1], opts));
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const lines = [];
-      let rest = remaining;
-      while (true) {
-        const m = rest.match(/^( *[-*+] .*)(?:\n|$)/);
-        if (!m) {
-          const cont = rest.match(/^( {2,}.+)(?:\n|$)/);
-          if (cont && lines.length > 0) {
-            lines.push(cont[1]);
-            rest = rest.slice(cont[0].length);
-            continue;
-          }
-          break;
-        }
-        lines.push(m[1]);
-        rest = rest.slice(m[0].length);
-      }
-      if (lines.length > 0) {
-        const items = parseListItems2(lines, 0);
-        output.push(renderList2(items, false, opts));
-        remaining = rest;
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const lines = [];
-      let rest = remaining;
-      let startNum = 1;
-      while (true) {
-        const m = rest.match(/^( *\d+\. .*)(?:\n|$)/);
-        if (!m) {
-          const cont = rest.match(/^( {3,}.+)(?:\n|$)/);
-          if (cont && lines.length > 0) {
-            lines.push(cont[1]);
-            rest = rest.slice(cont[0].length);
-            continue;
-          }
-          break;
-        }
-        if (lines.length === 0) {
-          const sn = m[1].match(/^(\d+)\./);
-          if (sn)
-            startNum = parseInt(sn[1], 10);
-        }
-        lines.push(m[1]);
-        rest = rest.slice(m[0].length);
-      }
-      if (lines.length > 0) {
-        const items = parseListItems2(lines, 0);
-        const tag = `ol${startNum !== 1 ? ` start="${startNum}"` : ""}`;
-        output.push(`<${tag}>
-${renderListItems2(items, true, opts)}
-</ol>`);
-        remaining = rest;
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    if (!opts.sanitize) {
-      const m = remaining.match(/^(<(?:div|section|article|aside|header|footer|nav|main|p|blockquote|pre|table|ul|ol|dl|form|figure|details|summary)[^>]*>[\s\S]*?<\/\w+>)\s*(?:\n|$)/i);
-      if (m) {
-        output.push(m[1]);
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    {
-      const m = remaining.match(/^([\s\S]+?)(?:\n\n|$)/);
-      if (m) {
-        const text = m[1].trim();
-        if (text) {
-          output.push(`<p>${renderInline2(text, opts)}</p>`);
-        }
-        remaining = remaining.slice(m[0].length);
-        matched = true;
-      }
-    }
-    if (matched)
-      continue;
-    remaining = remaining.slice(1);
-  }
-  return output.join(`
-`);
-}
-var defaultCss2 = `
-:root {
-  --md-font: system-ui, sans-serif;
-  --md-mono: "Fira Code", "Cascadia Code", Consolas, monospace;
-  --md-max-width: 800px;
-  --md-line-height: 1.7;
-  --md-color: #1a1a2e;
-  --md-bg: #ffffff;
-  --md-code-bg: #f4f4f8;
-  --md-table-2: #fafafa;
-  --md-border: #d1d5db;
-  --md-accent: #3b5bdb;
-  --md-blockquote: #6b7280;
-}
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; background: var(--md-bg); color: var(--md-color); }
-.md-body {
-  font-family: var(--md-font);
-  line-height: var(--md-line-height);
-  max-width: var(--md-max-width);
-  margin: 2rem auto;
-  padding: 0 1.5rem;
-}
-h1,h2,h3,h4,h5,h6 {
-  margin: 1.6em 0 0.4em;
-  line-height: 1.25;
-  font-weight: 700;
-}
-h1 { font-size: 2rem; border-bottom: 2px solid var(--md-border); padding-bottom: 0.3em; }
-h2 { font-size: 1.5rem; border-bottom: 1px solid var(--md-border); padding-bottom: 0.2em; }
-p { margin: 0.8em 0; }
-a { color: var(--md-accent); }
-code {
-  font-family: var(--md-mono);
-  font-size: 0.875em;
-  background: var(--md-code-bg);
-  padding: 0.15em 0.35em;
-  border-radius: 4px;
-}
-pre { background: var(--md-code-bg); border-radius: 6px; padding: 1em; overflow-x: auto; }
-pre code { background: none; padding: 0; font-size: 0.9em; }
-blockquote {
-  margin: 1em 0;
-  padding: 0.5em 1em;
-  border-left: 4px solid var(--md-accent);
-  color: var(--md-blockquote);
-}
-input { color: var(--md-color); background: var(--md-bg); }
-table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-th, td { border: 1px solid var(--md-border); padding: 0.5em 0.8em; }
-th { background: var(--md-code-bg); font-weight: 600; }
-tr:nth-child(even) td { background: var(--md-table-2); }
-ul, ol { padding-left: 1.5em; margin: 0.8em 0; }
-li { margin: 0.25em 0; }
-hr { border: none; border-top: 2px solid var(--md-border); margin: 2em 0; }
-img { max-width: 100%; height: auto; border-radius: 4px; }
-mark { background: #fef08a; padding: 0.1em 0.2em; border-radius: 2px; }
-input[type="checkbox"] { margin-right: 0.4em; }
-.footnotes { font-size: 0.875em; color: var(--md-blockquote); }
-@media (prefers-color-scheme: dark) {
-    :root {
-        --md-font: system-ui, sans-serif;
-        --md-mono: "Fira Code", "Cascadia Code", Consolas, monospace;
-        --md-max-width: 800px;
-        --md-line-height: 1.7;
-        --md-color: #ffffff;
-        --md-bg: #000000;
-        --md-code-bg: #292929;
-        --md-table-2: #1b1b1b;
-        --md-border: #d1d5db;
-        --md-accent: #45bbff;
-        --md-blockquote: #6b7280;
-    }
-}
-`;
-function parse2(markdown, options = {}) {
-  const opts = {
-    externalLinks: true,
-    breaks: false,
-    smartypants: false,
-    sanitize: false,
-    ...options
-  };
-  let text = markdown.replace(/\r\n/g, `
-`).replace(/\r/g, `
-`);
-  const codeBlockPlaceholders = [];
-  text = text.replace(/^(`{3,}|~{3,})([^\n]*)\n([\s\S]*?)\n?\1[ \t]*(?:\n|$)/gm, (_, fence, lang, code) => {
-    const idx = codeBlockPlaceholders.push(renderCodeBlock2(lang.trim(), code)) - 1;
-    return `@@CODEBLOCK${idx}@@
-`;
-  });
-  const { text: cleaned, notes } = collectFootnotes2(text);
-  text = cleaned;
-  text = renderFootnoteRefs2(text, notes, opts);
-  let html = parseBlocks2(text, opts);
-  html = html.replace(/@@CODEBLOCK(\d+)@@/g, (_, i) => codeBlockPlaceholders[+i]);
-  html += renderFootnoteList2(notes, opts);
-  return html;
-}
-function exportcss2() {
-  return defaultCss2;
-}
-
 // node_modules/html-minifier-terser/src/htmlminifier.js
 var import_clean_css = __toESM(require_clean(), 1);
 
@@ -47495,14 +46975,14 @@ async function compile() {
       }
       const route = path.relative("pages", file).replace(/\\/g, "/").replace(/\.md$/, "");
       const md = fs.readFileSync(file, "utf8");
-      pages[route] = await compressHTML(parse2(md));
+      pages[route] = await compressHTML(parse(md));
       console.log(`Compiled page ${source_default.green(route)} with size ${source_default.green(getsize(pages[route].length))} successfully!`);
     }
   }
   await walk2("pages");
   let template = fs.readFileSync("template.html", "utf8");
   const sortedPages = Object.fromEntries(Object.entries(pages).sort(([a], [b]) => a.localeCompare(b)));
-  const html = template.replace("__PAGES__", JSON.stringify(sortedPages)).replace("/*__CSS__{}*/", exportcss2());
+  const html = template.replace("__PAGES__", JSON.stringify(sortedPages)).replace("/*__CSS__{}*/", exportcss());
   let export_file = config.distfile ?? "index.html";
   let content = await compressHTML(html);
   fs.writeFileSync(export_file, content);
