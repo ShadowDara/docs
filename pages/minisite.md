@@ -6,5 +6,4 @@ Minisite is a small JS Tool to bundle a multi page into one single HTML file. At
 
 *Fun FACT: This page here was created by minisite*
 
-*EDIT DATE: 10.08.2026*#
-
+*EDIT DATE: 14.08.2026*

@@ -55,7 +55,9 @@ This is an overview about the samfile runners and which commands they are suppor
 *View the statistic [here](#/samfile/runners)*
 
 
-### Download
+### Buildin samfile
+
+The buildin samfile can be found [here](/docs/staticpages/buildinsamfiles.html)
 
 
 ### Ideas / TODO
@@ -65,4 +67,4 @@ This is an overview about the samfile runners and which commands they are suppor
 - *(I planning to make it slowly to an mix between shell and make)*
 
 
-*EDIT DATE: 11.07.2026*
+*EDIT DATE: 14.07.2026*
