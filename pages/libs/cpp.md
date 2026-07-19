@@ -1,7 +1,7 @@
-# Ansicolors
+# C++ Libs
 
 [Back Home](#) - [Download Page](#/download) - [Search](#/search)
 
-This page moved [here](#/libs/cpp/ansicolors)!
+- [Ansicolors](#/libs/cpp/ansicolors)
 
 *EDIT DATE: 19.07.2026*

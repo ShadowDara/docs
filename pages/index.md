@@ -13,6 +13,7 @@ This is my DOCS Page for all of my small projects and its a test for minisite to
 | [Path-Viewer](#/path-viewer) | a windows programm to view and edit the path variables written in C++ |
 | [samfile](#/samfile) | a makefile clone which a lot better ;) |
 | [templates](#/templates) | some templates for C++ projects which are already linked |
+| [C++ libs](#/libs/cpp) | some libs which i made in C++ |
 
 ## Content
 
@@ -45,4 +46,4 @@ This is my DOCS Page for all of my small projects and its a test for minisite to
 
 - *This site started on 10.07.2026*
 
-*EDIT DATE: 18.07.2026*
+*EDIT DATE: 19.07.2026*
